@@ -9,7 +9,11 @@
 #include "circular_buffer.h"
 
 int state = 0;
-void handle_signal(int signal) { state = 0; buff->state = 0; }
+void handle_signal(int signal)
+{
+    state = 0;
+    buff->state = 0;
+}
 
 // cleanup shared memory:
 void cleanup_shm(int cleanup_state, int exit_code)
@@ -241,10 +245,6 @@ int main(int argc, char *argv[])
     /* short explanation why arguments get appended to string in code above and get splitted in create_edges-methode
     below: implementation of code below happened first, so it was necessary to "build" the string in the code above */
 
-    // char input[] = {"0-1 1-2 1-3 1-4 2-4 3-6 4-3 4-5 6-0"};
-    //  char input[] = {"0-1 1-2 1-3 1-5"};
-    //   char input[] = {"0-2 0-9 0-11 1-4 3-2 3-6 4-2 4-9 5-2 5-11 6-2 6-4 7-2 7-4 7-5 7-8 7-16 7-17 8-9 8-12 8-17 10-2 10-9 11-2 12-1 12-6 12-10 13-5 13-6 13-8 14-4 14-12 15-8 15-11 15-13 16-1 16-6 16-17 17-6 17-10 17-11 18-7 18-8 18-11"};
-
     // count occurrence of '-' (and therefore number of edges)
     int number_edges;
     char *temp_input = strdup(input);
@@ -308,13 +308,13 @@ int main(int argc, char *argv[])
         printf("Error while creating and/or opening (a) new/existing semaphore(s) used %d\n", errno);
         cleanup_shm(3, EXIT_FAILURE);
     }
-    blocked_sem = sem_open(SEM_BLOCKED_NAME, 1); 
+    blocked_sem = sem_open(SEM_BLOCKED_NAME, 1);
     if (blocked_sem == SEM_FAILED)
     {
         printf("Error while creating and/or opening (a) new/existing semaphore(s) blocked %d\n", errno);
         cleanup_shm(4, EXIT_FAILURE);
     }
-    
+
     //  find fb_arc_set of ascending (start) array in first run of loop and then loop with shuffled array;
     //   the already shuffled array gets shuffled again every loop
     while (buff->state)
@@ -346,7 +346,8 @@ int main(int argc, char *argv[])
             }
         }
 
-        for (int i = 0; i < fb_amount; i++){ 
+        for (int i = 0; i < fb_amount; i++)
+        {
             printf("writing to wr_pos: %d, fb_arc_set-index: %d, edges: %d-%d\n", buff->wr_pos, i, atoi(fb_arc_set[i][0]), atoi(fb_arc_set[i][1]));
 
             buff->buffer[buff->wr_pos].fb_arc_set[i].vertex_u = atoi(fb_arc_set[i][0]);
@@ -365,7 +366,7 @@ int main(int argc, char *argv[])
         // shuffle vertices-array
         shuffle(vertices, maxIndex);
     }
-            sem_post(used_sem);
+    sem_post(used_sem);
     cleanup_shm(5, EXIT_SUCCESS);
 
     return 0;

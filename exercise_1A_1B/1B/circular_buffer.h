@@ -18,16 +18,16 @@
 #define SEM_USED_NAME "/SEM_USED_NAME"
 #define SEM_BLOCKED_NAME "/SEM_BLOCKED_NAME"
 
-//init instance of circ_buffer, semaphores and shm 
+// init instance of circ_buffer, semaphores and shm
 struct circ_buffer *buff = NULL;
 sem_t *free_sem = NULL;
-sem_t *used_sem =NULL;
-sem_t *blocked_sem = NULL; 
+sem_t *used_sem = NULL;
+sem_t *blocked_sem = NULL;
 int shm_fd = 0;
 
-
-//define structs
-struct edge {
+// define structs
+struct edge
+{
     int vertex_u;
     int vertex_v;
 };

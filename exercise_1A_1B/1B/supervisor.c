@@ -45,7 +45,7 @@ void cleanup_shm(int cleanup_state, int exit_code)
         {
             printf("Error while unlinking semaphore %d\n", errno);
         }
- 
+
     // cleanup shm
     case 3:
         // unmap shared memory object
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    //setup shm
+    // setup shm
     int shm_fd = shm_setup();
 
     //  map shared memory object
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
     bool cancel = 0;
     while (buff->state)
     {
-        //check for state 0 again
+        // check for state 0 again
         if (!buff->state)
         {
             printf("success\n");
@@ -165,13 +165,13 @@ int main(int argc, char *argv[])
                 exit(EXIT_FAILURE);
             }
 
-            //true if "cancelled" program with SIGINT
+            // true if "cancelled" program with SIGINT
             cancel = 1;
         }
 
         struct element el = buff->buffer[rd_pos];
 
-        //only compare if not canceled with SIGINT
+        // only compare if not canceled with SIGINT
         if (el.edge_number < best_number_edges && !cancel)
         {
             best_number_edges = el.edge_number;
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
             }
             printf("\n----------------\n\n");
         }
-        sem_post(free_sem); 
+        sem_post(free_sem);
         rd_pos++;
         rd_pos %= BUFFER_SIZE;
     }
