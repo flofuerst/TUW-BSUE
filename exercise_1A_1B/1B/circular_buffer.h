@@ -11,6 +11,7 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <signal.h>
+#include <fcntl.h>
 
 #define BUFFER_SIZE (20)
 #define SHM_NAME "/fb_arc_set_shm"
