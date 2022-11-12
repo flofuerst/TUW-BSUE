@@ -74,7 +74,7 @@ static void cleanup_shm(int cleanup_state, int exit_code, char *argv[])
     }
 }
 
-static int shm_setup(char *argv[])
+static void shm_sem_setup(char *argv[])
 {
     // create and/or open the shared memory object
     shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR | O_EXCL, 0600);
@@ -90,27 +90,6 @@ static int shm_setup(char *argv[])
         fprintf(stderr, "%s Error while setting up size of shared memory: %s\n", argv[0], strerror(errno));
         cleanup_shm(1, EXIT_FAILURE, &argv[0]);
     }
-    return shm_fd;
-}
-
-int main(int argc, char *argv[])
-{
-    if (argc > 1)
-    {
-        fprintf(stderr, "%s No arguments allowed!\n", argv[0]);
-        exit(EXIT_FAILURE);
-    }
-
-    // set signal handler
-    struct sigaction sa = {.sa_handler = handle_signal};
-    if (sigaction(SIGINT, &sa, NULL) + sigaction(SIGTERM, &sa, NULL) < 0)
-    {
-        fprintf(stderr, "%s Error while initializing signal handler: %s\n", argv[0], strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    // setup shm
-    int shm_fd = shm_setup(&argv[0]);
 
     //  map shared memory object
     if ((buff = mmap(NULL, sizeof(*buff), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0)) == MAP_FAILED)
@@ -138,6 +117,26 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s Error while creating and/or opening (a) new/existing semaphore(s) blocked: %s\n", argv[0], strerror(errno));
         cleanup_shm(5, EXIT_FAILURE, &argv[0]);
     }
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc > 1)
+    {
+        fprintf(stderr, "%s No arguments allowed!\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    // set signal handler
+    struct sigaction sa = {.sa_handler = handle_signal};
+    if (sigaction(SIGINT, &sa, NULL) + sigaction(SIGTERM, &sa, NULL) < 0)
+    {
+        fprintf(stderr, "%s Error while initializing signal handler: %s\n", argv[0], strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    // setup shm and semaphores
+    shm_sem_setup(&argv[0]);
 
     int rd_pos = 0;
 
