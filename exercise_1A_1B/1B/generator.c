@@ -1,27 +1,37 @@
 /**
  * @file generator.c
  * @author Florian Fuerst (12122096)
- * @brief Checks if the input is a palindrom and returns the appropriate results
+ * @brief Generates feedback arc set solution of given graph and writes results into circular buffer;
+ *        produces simple debug output, which describes fb arc set which is being written to the circular buffer
  * @date 2022-11-04
  *
  */
 
 #include "circular_buffer.h"
 
-int state = false;
-static void handle_signal(int signal)
-{
-    state = false;
-    buff->state = false;
-}
+/**
+ * @brief Function to handle signals;
+ *        In this case 'state' in circular_buffer will be set to false if signal gets detected
+ *
+ * @param signal signal number to which the handling function is set
+ */
 
-// cleanup shared memory:
-static void cleanup_shm(int cleanup_state, int exit_code, char *argv[])
+static void handle_signal(int signal) { buff->state = false; }
+
+/**
+ * @brief Function to clean up shared memory and semaphores before exiting the program
+ *
+ * @param cleanup_state describes "how much" needs to be cleaned up; higher numbers also contain cases below
+ * @param exit_code the exit code of how the program has to terminate; (is either EXIT_FAILURE or EXIT_SUCCESS)
+ * @param argv simple hand over of program name argv[0] for error messages
+ */
+static void cleanup_shm_sem(int cleanup_state, int exit_code, char *argv[])
 {
     switch (cleanup_state)
     {
     // cleanup semaphores
     case 5:
+        // close and unlink semaphores; print error message if not successful
         if (sem_close(blocked_sem) == -1)
         {
             fprintf(stderr, "%s Error while closing semaphore: %s\n", argv[0], strerror(errno));
@@ -41,25 +51,36 @@ static void cleanup_shm(int cleanup_state, int exit_code, char *argv[])
 
     // cleanup shm
     case 2:
-        // unmap shared memory object
+        // unmap shared memory object; print error message if not successful
         if (munmap(buff, sizeof(*buff)) == -1)
         {
             fprintf(stderr, "%s Error while unmapping shared memory object: %s\n", argv[0], strerror(errno));
         }
 
     case 1:
-        //  close shared memory
+        //  close shared memory; print error message if not successful
         if (close(shm_fd) == -1)
         {
             fprintf(stderr, "%s Error while closing shared memory: %s\n", argv[0], strerror(errno));
         }
 
     default:
+        // exit with according error code
         exit(exit_code);
         break;
     }
 }
 
+/**
+ * @brief stores edges based on given input graph into array and checks if all edges are valid; 
+ *        also returns the highest numeric value of all vertices;
+ * 
+ * @param input given input graph, where every char is a single element of array
+ * @param number_edges counted number of edges in input; is needed for edge-array
+ * @param edge two-dimensional array where all edges are stored
+ * @param argv simple hand over of program name argv[0] for error messages
+ * @return int max value (index) of vertices
+ */
 static int create_edges(char *input, int number_edges, long edge[number_edges][2], char *argv[])
 {
     // stores rest of the string
@@ -69,7 +90,7 @@ static int create_edges(char *input, int number_edges, long edge[number_edges][2
     char *full_edge_token = strtok_r(input, " \n", &full_rest);
 
     int counter = 0;
-    int maxVertexValue = 0;
+    int max_vertex_value = 0;
 
     char *end_char;
 
@@ -83,25 +104,25 @@ static int create_edges(char *input, int number_edges, long edge[number_edges][2
         char *single_edge_token = strtok_r(full_edge_token, "-", &single_rest);
         char *first = single_edge_token;
 
-        // convert current first vertex from string to int
-        long firstValue = strtol(first, &end_char, 10);
+        // convert current first vertex from string to long
+        long first_value = strtol(first, &end_char, 10);
 
         // check if current (first) vertex of edge has the highest value (index) of all vertices
-        if (firstValue > maxVertexValue)
-            maxVertexValue = firstValue;
+        if (first_value > max_vertex_value)
+            max_vertex_value = first_value;
 
         // pass NULL to continue splitting string with strtok_r and get second vertex of edge
         char *second = single_edge_token = strtok_r(NULL, " ", &single_rest);
 
-        // convert current second vertex from string to int
-        long secondValue = strtol(second, &end_char, 10);
+        // convert current second vertex from string to long
+        long second_value = strtol(second, &end_char, 10);
 
         // check if current (second) vertex of edge has the highest value (index) of all vertices
-        if (secondValue > maxVertexValue)
-            maxVertexValue = secondValue;
+        if (second_value > max_vertex_value)
+            max_vertex_value = second_value;
 
         // check if vertex is connected to itself --> not allowed
-        if (firstValue == secondValue)
+        if (first_value == second_value)
         {
             fprintf(stderr, "%s Invalid Edge! At least one vertex is connected to itself!\n", argv[0]);
             exit(EXIT_FAILURE);
@@ -111,7 +132,7 @@ static int create_edges(char *input, int number_edges, long edge[number_edges][2
         // edges get saved in edge-array too --> doesn't matter but is maybe inefficient
         for (int i = 0; i < counter; i++)
         {
-            if (firstValue == edge[i][0] && secondValue == edge[i][1])
+            if (first_value == edge[i][0] && second_value == edge[i][1])
             {
                 fprintf(stderr, "%s Invalid Edge! At least one edge already exists!\n", argv[0]);
                 exit(EXIT_FAILURE);
@@ -119,27 +140,32 @@ static int create_edges(char *input, int number_edges, long edge[number_edges][2
         }
 
         // store vertices of edges in array
-        edge[counter][0] = firstValue;
-        edge[counter++][1] = secondValue;
+        edge[counter][0] = first_value;
+        edge[counter++][1] = second_value;
 
         // pass NULL to continue splitting string with strtok_r and get other edges
         full_edge_token = strtok_r(NULL, " \n", &full_rest);
     }
 
-    return maxVertexValue;
+    return max_vertex_value;
 }
 
-// shuffle array list using fisher-yates shuffle
-static void shuffle(int vertices[], int maxIndex)
+/**
+ * @brief shuffles vertices-array using the Fisher-Yates shuffle
+ * 
+ * @param vertices array where all vertices are stored in ascending order 
+ * @param max_index max value (index) of vertices
+ */
+static void shuffle(int vertices[], int max_index)
 {
     int i, j, temp;
 
     // call rand one time before usage to fix pseudo random effect (often same numbers when first called)
     rand();
 
-    for (i = maxIndex; i > 0; i--)
+    for (i = max_index; i > 0; i--)
     {
-        j = rand() % (maxIndex + 1);
+        j = rand() % (max_index + 1);
 
         // shuffle values
         temp = vertices[j];
@@ -148,12 +174,22 @@ static void shuffle(int vertices[], int maxIndex)
     }
 }
 
-static bool inOrder(long value_1, long value_2, int vertices[], int maxIndex)
+/**
+ * @brief checks if vertices of edge are in topological order based on their index
+ * 
+ * @param value_1 first vertex 'u' of edge
+ * @param value_2 second vertex 'v' of edge
+ * @param vertices array where all vertices are stored
+ * @param max_index max value (index) of vertices
+ * @return true if vertices are in topological order
+ * @return false if vertices are not in topological order
+ */
+static bool inOrder(long value_1, long value_2, int vertices[], int max_index)
 {
     int index_v1, index_v2;
 
     // find indices of values
-    for (int i = 0; i < maxIndex + 1; i++)
+    for (int i = 0; i < max_index + 1; i++)
     {
         if (vertices[i] == value_1)
             index_v1 = i;
@@ -165,7 +201,17 @@ static bool inOrder(long value_1, long value_2, int vertices[], int maxIndex)
     return index_v1 < index_v2;
 }
 
-static int find_fb_arc_set(int vertices[], int number_edges, long edge[number_edges][2], int maxIndex, long fb_arc_set[8][2])
+/**
+ * @brief finds minimal feedback arc of given vertices-array and edge-array
+ * 
+ * @param vertices array where all vertices are stored
+ * @param number_edges counted number of edges in input; is needed for edge-array
+ * @param edge two-dimensional array where all edges are stored
+ * @param max_index max value (index) of vertices
+ * @param fb_arc_set empty fb_arc_set-array where solutions are getting stored
+ * @return int the number of edges in the feedback arc set
+ */
+static int find_fb_arc_set(int vertices[], int number_edges, long edge[number_edges][2], int max_index, long fb_arc_set[8][2])
 {
     // init fb_counter
     int fb_counter = 0;
@@ -173,7 +219,7 @@ static int find_fb_arc_set(int vertices[], int number_edges, long edge[number_ed
     // add all edges which are not in order to fb arc set and increment fb_counter
     for (int i = 0; i < number_edges; i++)
     {
-        if (!inOrder(edge[i][0], edge[i][1], vertices, maxIndex))
+        if (!inOrder(edge[i][0], edge[i][1], vertices, max_index))
         {
             fb_arc_set[fb_counter][0] = edge[i][0];
             fb_arc_set[fb_counter++][1] = edge[i][1];
@@ -185,6 +231,11 @@ static int find_fb_arc_set(int vertices[], int number_edges, long edge[number_ed
     return fb_counter;
 }
 
+/**
+ * @brief Sets up the shared memory and semaphores
+ * 
+ * @param argv simple hand over of program name argv[0] for error messages
+ */
 static void shm_sem_setup(char *argv[])
 {
     // open the shared memory object
@@ -198,7 +249,7 @@ static void shm_sem_setup(char *argv[])
     if ((buff = mmap(NULL, sizeof(*buff), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0)) == MAP_FAILED)
     {
         fprintf(stderr, "%s Error while mapping shared memory object: %s\n", argv[0], strerror(errno));
-        cleanup_shm(1, EXIT_FAILURE, &argv[0]);
+        cleanup_shm_sem(1, EXIT_FAILURE, &argv[0]);
     }
 
     // open semaphores
@@ -207,22 +258,31 @@ static void shm_sem_setup(char *argv[])
     {
         fprintf(stderr, "%s Error while creating and/or opening (a) new/existing semaphore(s) free: %s\n", argv[0], strerror(errno));
         // fprintf(stderr, "%s Input file %s not found\n", argv[0], argv[i]);
-        cleanup_shm(2, EXIT_FAILURE, &argv[0]);
+        cleanup_shm_sem(2, EXIT_FAILURE, &argv[0]);
     }
     used_sem = sem_open(SEM_USED_NAME, 0);
     if (used_sem == SEM_FAILED)
     {
         fprintf(stderr, "%s Error while creating and/or opening (a) new/existing semaphore(s) used: %s\n", argv[0], strerror(errno));
-        cleanup_shm(3, EXIT_FAILURE, &argv[0]);
+        cleanup_shm_sem(3, EXIT_FAILURE, &argv[0]);
     }
     blocked_sem = sem_open(SEM_BLOCKED_NAME, 1);
     if (blocked_sem == SEM_FAILED)
     {
         fprintf(stderr, "%s Error while creating and/or opening (a) new/existing semaphore(s) blocked: %s\n", argv[0], strerror(errno));
-        cleanup_shm(4, EXIT_FAILURE, &argv[0]);
+        cleanup_shm_sem(4, EXIT_FAILURE, &argv[0]);
     }
 }
 
+/**
+ * @brief Sets up signal handling; checks correct program call; writes generated results to the circular buffer;
+ *        produces simple debug output, which describes fb arc set which is being written to the circular buffer;
+ *        calls appropriate functions to make the program work how it should;
+ * 
+ * @param argc number of arguments of the program call
+ * @param argv array of the arguments of the program call
+ * @return int return value of main method to tell when program is finished (and therefore can be removed from memory)
+ */
 int main(int argc, char *argv[])
 {
 
@@ -293,17 +353,18 @@ int main(int argc, char *argv[])
     long edge[number_edges][2];
 
     // stores edges based on input in array and also returns max value (index) of vertices
-    int maxIndex = create_edges(input, number_edges, edge, &argv[0]);
+    int max_index = create_edges(input, number_edges, edge, &argv[0]);
 
     int fb_amount;
     long fb_arc_set[8][2];
 
     // init random number generator with seed which consists of process id and time for rand in shuffle
-    srand(time(NULL) ^ getpid());
+    struct timespec t;
+    srand(((long) getpid()) * 1000000000 + t.tv_nsec);
 
     // create array with all occurring vertices stored as a topological order
-    int vertices[maxIndex + 1];
-    for (int i = 0; i < maxIndex + 1; i++)
+    int vertices[max_index + 1];
+    for (int i = 0; i < max_index + 1; i++)
     {
         vertices[i] = i;
     }
@@ -323,7 +384,7 @@ int main(int argc, char *argv[])
     //   the already shuffled array gets shuffled again every loop
     while (buff->state)
     {
-        fb_amount = find_fb_arc_set(vertices, number_edges, edge, maxIndex, fb_arc_set);
+        fb_amount = find_fb_arc_set(vertices, number_edges, edge, max_index, fb_arc_set);
 
         if (sem_wait(blocked_sem) == -1)
         {
@@ -366,10 +427,10 @@ int main(int argc, char *argv[])
 
         //------------------------
         // shuffle vertices-array
-        shuffle(vertices, maxIndex);
+        shuffle(vertices, max_index);
     }
     sem_post(used_sem);
-    cleanup_shm(5, EXIT_SUCCESS, &argv[0]);
+    cleanup_shm_sem(5, EXIT_SUCCESS, &argv[0]);
 
     return 0;
 }

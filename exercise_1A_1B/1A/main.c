@@ -143,6 +143,14 @@ static void readInputFile(FILE *input, bool caseInsensitive, bool ignoreWhitespa
     fclose(input);
 }
 
+/**
+ * @brief checks correct program call; takes actions based on the specief options; calls appropriate functions to 
+ * make the program work how it should;
+ * 
+ * @param argc number of arguments of the program call
+ * @param argv array of the arguments of the program call
+ * @return int return value of main method to tell when program is finished (and therefore can be removed from memory)
+ */
 int main(int argc, char *argv[])
 {
     char *outfile = NULL;
@@ -210,5 +218,5 @@ int main(int argc, char *argv[])
         }
     }
     fclose(output);
-    return EXIT_SUCCESS;
+    return 0;
 }
