@@ -1,3 +1,15 @@
+/**
+ * @file circular_buffer.h
+ * @author Florian Fuerst (12122096)
+ * @brief header file which includes all headers, defines the names of all resources and initializes the circular buffer,
+ *        shm and semaphores and defines all used structs
+
+ * @date 2022-11-12
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -27,18 +39,33 @@ sem_t *blocked_sem = NULL;
 int shm_fd = 0;
 
 // define structs
+
+/**
+ * @brief defines a struct with one edge with two vertices 'u' and 'v'
+ * 
+ */
 struct edge
 {
     long vertex_u;
     long vertex_v;
 };
 
+/**
+ * @brief defines a struct with 8 edges of the feedback arc set and the number of edges of the current fb arc set
+ * 
+ */
 struct element
 {
     int edge_number;
     struct edge fb_arc_set[8];
 };
 
+/**
+ * @brief defines a struct of the circular buffer; 
+ *        the state bool notifies all generators to terminate (before the supervisore terminates);
+ *        the writing position tells the generator(s) where to write on the circular buffer
+ * 
+ */
 struct circ_buffer
 {
     bool state;

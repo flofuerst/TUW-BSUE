@@ -3,7 +3,7 @@
  * @author Florian Fuerst (12122096)
  * @brief Generates feedback arc set solution of given graph and writes results into circular buffer;
  *        produces simple debug output, which describes fb arc set which is being written to the circular buffer
- * @date 2022-11-04
+ * @date 2022-11-12
  *
  */
 
@@ -359,8 +359,7 @@ int main(int argc, char *argv[])
     long fb_arc_set[8][2];
 
     // init random number generator with seed which consists of process id and time for rand in shuffle
-    struct timespec t;
-    srand(((long) getpid()) * 1000000000 + t.tv_nsec);
+    srand(getpid() ^time(NULL));
 
     // create array with all occurring vertices stored as a topological order
     int vertices[max_index + 1];
