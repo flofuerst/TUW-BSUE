@@ -29,8 +29,8 @@ int shm_fd = 0;
 // define structs
 struct edge
 {
-    int vertex_u;
-    int vertex_v;
+    long vertex_u;
+    long vertex_v;
 };
 
 struct element
