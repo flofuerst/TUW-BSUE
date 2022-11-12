@@ -8,11 +8,11 @@
 
 #include "circular_buffer.h"
 
-int state = 0;
+int state = false;
 static void handle_signal(int signal)
 {
-    state = 0;
-    buff->state = 0;
+    state = false;
+    buff->state = false;
 }
 
 // cleanup shared memory:
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
     // stores edges based on input in array and also returns max value (index) of vertices
     int maxIndex = create_edges(input, number_edges, edge, &argv[0]);
 
-    int fb_amount, best_fb_amount = 99;
+    int fb_amount;
     long fb_arc_set[8][2];
 
     // init random number generator with seed which consists of process id and time for rand in shuffle
@@ -324,8 +324,6 @@ int main(int argc, char *argv[])
     while (buff->state)
     {
         fb_amount = find_fb_arc_set(vertices, number_edges, edge, maxIndex, fb_arc_set);
-        if (fb_amount < best_fb_amount)
-            best_fb_amount = fb_amount;
 
         if (sem_wait(blocked_sem) == -1)
         {

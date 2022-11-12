@@ -14,10 +14,10 @@
 #include <fcntl.h>
 
 #define BUFFER_SIZE (20)
-#define SHM_NAME "/fb_arc_set_shm"
-#define SEM_FREE_NAME "/SEM_FREE_NAME"
-#define SEM_USED_NAME "/SEM_USED_NAME"
-#define SEM_BLOCKED_NAME "/SEM_BLOCKED_NAME"
+#define SHM_NAME "/12122096_SHM"
+#define SEM_FREE_NAME "/12122096_FREE"
+#define SEM_USED_NAME "/12122096_USED"
+#define SEM_BLOCKED_NAME "/12122096_BLOCKED"
 
 // init instance of circ_buffer, semaphores and shm
 struct circ_buffer *buff = NULL;

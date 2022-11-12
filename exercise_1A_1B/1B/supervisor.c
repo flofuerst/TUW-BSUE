@@ -8,7 +8,7 @@
 
 #include "circular_buffer.h"
 
-static void handle_signal(int signal) { buff->state = 0; }
+static void handle_signal(int signal) { buff->state = false; }
 
 // cleanup shared memory:
 static void cleanup_shm(int cleanup_state, int exit_code, char *argv[])
@@ -144,9 +144,9 @@ int main(int argc, char *argv[])
     int best_number_edges = 9;
 
     // set state to up
-    buff->state = 1;
+    buff->state = true;
     buff->wr_pos = 0;
-    bool cancel = 0;
+    bool cancel = false;
     while (buff->state)
     {
         // check for state 0 again
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
             }
 
             // true if "cancelled" program with SIGINT
-            cancel = 1;
+            cancel = true;
         }
 
         struct element el = buff->buffer[rd_pos];
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
             if (best_number_edges == 0)
             {
                 printf("This graph is already acyclic!\n");
-                buff->state = 0;
+                buff->state = false;
             }
             else
             {
