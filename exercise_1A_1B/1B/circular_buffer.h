@@ -25,20 +25,27 @@
 #include <signal.h>
 #include <fcntl.h>
 
+
+/**
+ * @brief defining constants for the size of the buffer, shared memory name ans semaphore names
+ * 
+ */
 #define BUFFER_SIZE (20)
 #define SHM_NAME "/12122096_SHM"
 #define SEM_FREE_NAME "/12122096_FREE"
 #define SEM_USED_NAME "/12122096_USED"
 #define SEM_BLOCKED_NAME "/12122096_BLOCKED"
 
-// init instance of circ_buffer, semaphores and shm
+/**
+ * @brief init instances of circ_buffer, semaphores and shm
+ * 
+ */
 struct circ_buffer *buff = NULL;
 sem_t *free_sem = NULL;
 sem_t *used_sem = NULL;
 sem_t *blocked_sem = NULL;
 int shm_fd = 0;
 
-// define structs
 
 /**
  * @brief defines a struct with one edge with two vertices 'u' and 'v'

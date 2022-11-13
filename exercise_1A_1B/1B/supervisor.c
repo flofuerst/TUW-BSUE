@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
     if (sigaction(SIGINT, &sa, NULL) + sigaction(SIGTERM, &sa, NULL) < 0)
     {
         fprintf(stderr, "%s Error while initializing signal handler: %s\n", argv[0], strerror(errno));
-        exit(EXIT_FAILURE); 
+        exit(EXIT_FAILURE);
     }
 
     // setup shm and semaphores
@@ -213,19 +213,19 @@ int main(int argc, char *argv[])
             // print that graph is acyclic if best number of edges is zero
             if (best_number_edges == 0)
             {
-                printf("This graph is already acyclic!\n");
+                printf("%s This graph is already acyclic!\n", argv[0]);
                 buff->state = false;
             }
             // print solution of current element if number of edges is greater than zero
             else
             {
-                printf("Current best solution with %d edges: \n", best_number_edges);
+                printf("%s Solution with %d edges: ", argv[0], best_number_edges);
                 for (int i = 0; i < best_number_edges; i++)
                 {
-                    printf("%ld-%ld\n", el.fb_arc_set[i].vertex_u, el.fb_arc_set[i].vertex_v);
+                    printf("%ld-%ld ", el.fb_arc_set[i].vertex_u, el.fb_arc_set[i].vertex_v); 
                 }
+                printf("\n");
             }
-            printf("\n----------------\n\n");
         }
         sem_post(free_sem);
 

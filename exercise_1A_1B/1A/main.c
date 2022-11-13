@@ -3,7 +3,7 @@
  * @author Florian Fuerst (12122096)
  * @brief Checks if the input is a palindrom and returns the appropriate results
  * @date 2022-11-01
- * 
+ *
  */
 
 #include <stdio.h>
@@ -13,6 +13,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <getopt.h>
+#include <errno.h>
 
 /**
  * @brief Checks if string is a palindrom
@@ -104,7 +105,7 @@ static void removeNewspaces(char *input)
  * @param ignoreWhitespaces Bool if whitespaces should be ignored in string
  * @param outfile The file where the result of isPalindrom should be written; It is either a file or stdout
  */
-static void readInputFile(FILE *input, bool caseInsensitive, bool ignoreWhitespaces, FILE *outfile)
+static void readInputFile(FILE *input, bool caseInsensitive, bool ignoreWhitespaces, FILE *outfile, char *argv[])
 {
     // string and size to read lines with getline
     char *line = NULL;
@@ -137,14 +138,22 @@ static void readInputFile(FILE *input, bool caseInsensitive, bool ignoreWhitespa
         free(newLine);
         free(tempLine);
     }
+
+    // line needs to get freed
+    free(line);
+
     // close file
-    fclose(input);
+    if (fclose(input) == EOF)
+    {
+        fprintf(stderr, "%s Error while closing file! %s", argv[0], strerror(errno));
+        exit(EXIT_FAILURE);
+    }
 }
 
 /**
- * @brief checks correct program call; takes actions based on the specief options; calls appropriate functions to 
+ * @brief checks correct program call; takes actions based on the specief options; calls appropriate functions to
  * make the program work how it should;
- * 
+ *
  * @param argc number of arguments of the program call
  * @param argv array of the arguments of the program call
  * @return int return value of main method to tell when program is finished (and therefore can be removed from memory)
@@ -171,8 +180,8 @@ int main(int argc, char *argv[])
             outfile = optarg;
             break;
         default:
-            printf("SYNOPSIS:\n%s [-s] [-i] [-o outfile] [file...]\n", argv[0]);
-            return EXIT_FAILURE;
+            fprintf(stderr, "SYNOPSIS:\n%s [-s] [-i] [-o outfile] [file...]\n", argv[0]);
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -183,6 +192,7 @@ int main(int argc, char *argv[])
 
         if (output == NULL)
         {
+            fprintf(stderr, "%s Error while opening file: %s\n", argv[0], strerror(errno));
             exit(EXIT_FAILURE);
         }
     }
@@ -193,7 +203,7 @@ int main(int argc, char *argv[])
         // read content from stdin
         while (true)
         {
-            readInputFile(stdin, caseInsensitive, ignoreWhitespaces, output);
+            readInputFile(stdin, caseInsensitive, ignoreWhitespaces, output, &argv[0]);
         }
     }
     // read from input file(s) (if given)
@@ -206,15 +216,20 @@ int main(int argc, char *argv[])
             FILE *f = fopen(argv[i], "r");
             if (f == NULL)
             {
-                fprintf(stderr, "%s Input file %s not found\n", argv[0], argv[i]);
+                fprintf(stderr, "%s Error while opening file %s: %s\n", argv[0], argv[i], strerror(errno));
                 exit(EXIT_FAILURE);
             }
 
             // read content from file
-            readInputFile(f, caseInsensitive, ignoreWhitespaces, output);
+            readInputFile(f, caseInsensitive, ignoreWhitespaces, output, &argv[0]);
             i++;
         }
     }
-    fclose(output);
+    if (fclose(output) == EOF)
+    {
+        fprintf(stderr, "%s Error while closing file! %s", argv[0], strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
     return 0;
 }
