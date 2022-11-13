@@ -3,7 +3,7 @@
  * @author Florian Fuerst (12122096)
  * @brief Generates feedback arc set solution of given graph and writes results into circular buffer;
  *        produces simple debug output, which describes fb arc set which is being written to the circular buffer
- * @date 2022-11-13
+ * @date 2022-11-12
  *
  */
 

@@ -1,7 +1,6 @@
-# @file makefile
-# @author Florian Fuerst (12122096)
-# @brief The makefile for the task fb_arc_set which compiles and links files
-# @date 2022-11-13
+# program name: fb_arc_set
+# author: Florian Fuerst (12122096)
+# date: 2022-11-12
 
 CC = gcc
 DEFS = -D_BSD_SOURCE -D_SVID_SOURCE -D_POSIX_C_SOURCE=200809L

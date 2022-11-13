@@ -4,7 +4,7 @@
  * @brief header file which includes all headers, defines the names of all resources and initializes the circular buffer,
  *        shm and semaphores and defines all used structs
 
- * @date 2022-11-13
+ * @date 2022-11-12
  *
  * @copyright Copyright (c) 2022
  *

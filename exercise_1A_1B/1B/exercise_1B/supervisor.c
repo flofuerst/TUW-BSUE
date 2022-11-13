@@ -3,7 +3,7 @@
  * @author Florian Fuerst (12122096)
  * @brief Sets up the shared memory and semaphores; The supervisor reads the results from the generator(s)
  *        from the circular buffer and saves the best solution, which gets also printed to standard output
- * @date 2022-11-13
+ * @date 2022-11-12
  *
  */
 
