@@ -52,7 +52,7 @@ static bool isPalindrom(char *input)
  */
 static void lowerLetters(char *input)
 {
-    while ((*input = tolower(*input))!= '\0')
+    while ((*input = tolower(*input)) != '\0')
     {
         input++;
     }
@@ -66,19 +66,12 @@ static void lowerLetters(char *input)
 static void removeWhitespaces(char *input)
 {
     char *temp_input = input;
-
-    // loop till null character is reached
-    while (*input != '\0')
+    
+    do
     {
-        // skip all whitespaces
-        while (*temp_input == ' ')
-        {
+        while (isspace(*temp_input))
             temp_input++;
-        }
-
-        // replace char of input string with char of new string (which has no whitespaces) and go to next char of string
-        *input++ = *temp_input++;
-    }
+    } while ((*input++ = *temp_input++));
 }
 
 /**
@@ -117,11 +110,13 @@ static void readInputFile(FILE *input, bool caseInsensitive, bool ignoreWhitespa
     while (getline(&line, &size, input) != -1)
     {
         // remove newspaces at end of line (input string cannot be modified so it needs to be duplicated)
-        char *newLine = strdup(line);
+        char *newLineOriginal = strdup(line);
+        char *newLine = newLineOriginal;
         removeNewspaces(newLine);
 
         // duplicate new string again to apply modifications according to the given options
-        char *tempLine = strdup(newLine);
+        char *tempLineOriginal = strdup(newLine);
+        char *tempLine = tempLineOriginal;
         if (caseInsensitive)
             lowerLetters(tempLine);
         if (ignoreWhitespaces)
@@ -136,18 +131,21 @@ static void readInputFile(FILE *input, bool caseInsensitive, bool ignoreWhitespa
         else
             fprintf(outfile, "%s is not a palindrom\n", newLine);
 
-        free(newLine);
-        free(tempLine);
+        free(newLineOriginal);
+        free(tempLineOriginal);
     }
 
     // line needs to get freed
     free(line);
 
     // close file
-    if (fclose(input) == EOF)
+    if (input != stdin)
     {
-        fprintf(stderr, "%s Error while closing file! %s", argv[0], strerror(errno));
-        exit(EXIT_FAILURE);
+        if (fclose(input) == EOF)
+        {
+            fprintf(stderr, "%s Error while closing file! %s", argv[0], strerror(errno));
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
@@ -172,13 +170,37 @@ int main(int argc, char *argv[])
         switch (c)
         {
         case 's':
-            ignoreWhitespaces = true;
+            if (ignoreWhitespaces)
+            {
+                fprintf(stderr, "SYNOPSIS:\n%s [-s] [-i] [-o outfile] [file...]\n", argv[0]);
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                ignoreWhitespaces = true;
+            }
             break;
         case 'i':
-            caseInsensitive = true;
+            if (caseInsensitive)
+            {
+                fprintf(stderr, "SYNOPSIS:\n%s [-s] [-i] [-o outfile] [file...]\n", argv[0]);
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                caseInsensitive = true;
+            }
             break;
         case 'o':
-            outfile = optarg;
+            if (outfile != NULL)
+            {
+                fprintf(stderr, "SYNOPSIS:\n%s [-s] [-i] [-o outfile] [file...]\n", argv[0]);
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                outfile = optarg;
+            }
             break;
         default:
             fprintf(stderr, "SYNOPSIS:\n%s [-s] [-i] [-o outfile] [file...]\n", argv[0]);
@@ -202,10 +224,7 @@ int main(int argc, char *argv[])
     if (argc - optind == 0)
     {
         // read content from stdin
-        while (true)
-        {
-            readInputFile(stdin, caseInsensitive, ignoreWhitespaces, output, &argv[0]);
-        }
+        readInputFile(stdin, caseInsensitive, ignoreWhitespaces, output, &argv[0]);
     }
     // read from input file(s) (if given)
     else
