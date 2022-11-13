@@ -5,9 +5,9 @@
  *        shm and semaphores and defines all used structs
 
  * @date 2022-11-12
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include <stdio.h>
@@ -42,7 +42,7 @@ int shm_fd = 0;
 
 /**
  * @brief defines a struct with one edge with two vertices 'u' and 'v'
- * 
+ *
  */
 struct edge
 {
@@ -52,7 +52,7 @@ struct edge
 
 /**
  * @brief defines a struct with 8 edges of the feedback arc set and the number of edges of the current fb arc set
- * 
+ *
  */
 struct element
 {
@@ -61,10 +61,10 @@ struct element
 };
 
 /**
- * @brief defines a struct of the circular buffer; 
+ * @brief defines a struct of the circular buffer;
  *        the state bool notifies all generators to terminate (before the supervisore terminates);
  *        the writing position tells the generator(s) where to write on the circular buffer
- * 
+ *
  */
 struct circ_buffer
 {

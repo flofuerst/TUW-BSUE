@@ -1,12 +1,11 @@
-#program name: fb_arc_set
-#author: Florian Fuerst (12122096)
+# program name: fb_arc_set
+# author: Florian Fuerst (12122096)
+# date: 2022-11-12
 
 CC = gcc
 DEFS = -D_BSD_SOURCE -D_SVID_SOURCE -D_POSIX_C_SOURCE=200809L
 CFLAGS = -Wall -g -std=c99 -pedantic $(DEFS)
 # LDFLAGS = -lrt -pthread
-
-OBJECTS = main.o
 
 .PHONY: all clean
 all: generator supervisor

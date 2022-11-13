@@ -118,8 +118,6 @@ static void readInputFile(FILE *input, bool caseInsensitive, bool ignoreWhitespa
         char *newLine = strdup(line);
         removeNewspaces(newLine);
 
-        // check if line is not empty
-
         // duplicate new string again to apply modifications according to the given options
         char *tempLine = strdup(newLine);
         if (caseInsensitive)

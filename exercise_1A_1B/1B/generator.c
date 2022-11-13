@@ -72,9 +72,9 @@ static void cleanup_shm_sem(int cleanup_state, int exit_code, char *argv[])
 }
 
 /**
- * @brief stores edges based on given input graph into array and checks if all edges are valid; 
+ * @brief stores edges based on given input graph into array and checks if all edges are valid;
  *        also returns the highest numeric value of all vertices;
- * 
+ *
  * @param input given input graph, where every char is a single element of array
  * @param number_edges counted number of edges in input; is needed for edge-array
  * @param edge two-dimensional array where all edges are stored
@@ -152,8 +152,8 @@ static int create_edges(char *input, int number_edges, long edge[number_edges][2
 
 /**
  * @brief shuffles vertices-array using the Fisher-Yates shuffle
- * 
- * @param vertices array where all vertices are stored in ascending order 
+ *
+ * @param vertices array where all vertices are stored in ascending order
  * @param max_index max value (index) of vertices
  */
 static void shuffle(int vertices[], int max_index)
@@ -176,7 +176,7 @@ static void shuffle(int vertices[], int max_index)
 
 /**
  * @brief checks if vertices of edge are in topological order based on their index
- * 
+ *
  * @param value_1 first vertex 'u' of edge
  * @param value_2 second vertex 'v' of edge
  * @param vertices array where all vertices are stored
@@ -203,7 +203,7 @@ static bool inOrder(long value_1, long value_2, int vertices[], int max_index)
 
 /**
  * @brief finds minimal feedback arc of given vertices-array and edge-array
- * 
+ *
  * @param vertices array where all vertices are stored
  * @param number_edges counted number of edges in input; is needed for edge-array
  * @param edge two-dimensional array where all edges are stored
@@ -233,7 +233,7 @@ static int find_fb_arc_set(int vertices[], int number_edges, long edge[number_ed
 
 /**
  * @brief Sets up the shared memory and semaphores
- * 
+ *
  * @param argv simple hand over of program name argv[0] for error messages
  */
 static void shm_sem_setup(char *argv[])
@@ -278,7 +278,7 @@ static void shm_sem_setup(char *argv[])
  * @brief Sets up signal handling; checks correct program call; writes generated results to the circular buffer;
  *        produces simple debug output, which describes fb arc set which is being written to the circular buffer;
  *        calls appropriate functions to make the program work how it should;
- * 
+ *
  * @param argc number of arguments of the program call
  * @param argv array of the arguments of the program call
  * @return int return value of main method to tell when program is finished (and therefore can be removed from memory)
@@ -358,8 +358,14 @@ int main(int argc, char *argv[])
     int fb_amount;
     long fb_arc_set[8][2];
 
-    // init random number generator with seed which consists of process id and time for rand in shuffle
-    srand(getpid() ^time(NULL));
+    // init random number generator with seed which consists of process id and time in nanoseconds for rand in shuffle
+    struct timespec t;
+    if (clock_gettime(CLOCK_REALTIME, &t) == -1)
+    {
+        fprintf(stderr, "Failed to get time: %s", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    srand(((long)getpid()) * 1000000000 + t.tv_nsec);
 
     // create array with all occurring vertices stored as a topological order
     int vertices[max_index + 1];
@@ -379,10 +385,12 @@ int main(int argc, char *argv[])
     // setup shm and semaphores
     shm_sem_setup(&argv[0]);
 
-    //  find fb_arc_set of ascending (start) array in first run of loop and then loop with shuffled array;
-    //   the already shuffled array gets shuffled again every loop
+    // find fb_arc_set of shuffled vertices-array;
+    // the already shuffled array gets shuffled again every loop
     while (buff->state)
     {
+        // shuffle vertices-array
+        shuffle(vertices, max_index);
         fb_amount = find_fb_arc_set(vertices, number_edges, edge, max_index, fb_arc_set);
 
         if (sem_wait(blocked_sem) == -1)
@@ -423,10 +431,6 @@ int main(int argc, char *argv[])
 
         sem_post(used_sem);
         sem_post(blocked_sem);
-
-        //------------------------
-        // shuffle vertices-array
-        shuffle(vertices, max_index);
     }
     sem_post(used_sem);
     cleanup_shm_sem(5, EXIT_SUCCESS, &argv[0]);

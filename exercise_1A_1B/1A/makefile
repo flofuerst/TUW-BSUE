@@ -1,5 +1,6 @@
-#program name: ispalindrom
-#author: Florian Fuerst (12122096)
+# program name: ispalindrom
+# author: Florian Fuerst (12122096)
+# date: 2022-11-01
 
 CC = gcc
 DEFS = -D_BSD_SOURCE -D_SVID_SOURCE -D_POSIX_C_SOURCE=200809L

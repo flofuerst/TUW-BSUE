@@ -12,7 +12,7 @@
 /**
  * @brief Function to handle signals;
  *        In this case 'state' in circular_buffer will be set to false if signal gets detected
- * 
+ *
  * @param signal signal number to which the handling function is set
  */
 static void handle_signal(int signal) { buff->state = false; }
@@ -83,7 +83,7 @@ static void cleanup_shm_sem(int cleanup_state, int exit_code, char *argv[])
         }
 
     default:
-    //exit with according error code
+        // exit with according error code
         exit(exit_code);
         break;
     }
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
     if (sigaction(SIGINT, &sa, NULL) + sigaction(SIGTERM, &sa, NULL) < 0)
     {
         fprintf(stderr, "%s Error while initializing signal handler: %s\n", argv[0], strerror(errno));
-        exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE); 
     }
 
     // setup shm and semaphores
