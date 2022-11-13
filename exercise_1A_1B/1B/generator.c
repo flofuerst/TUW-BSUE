@@ -87,7 +87,7 @@ static int create_edges(char *input, int number_edges, long edge[number_edges][2
     char *full_rest = NULL;
 
     // get the first edge (example: 1-2)
-    char *full_edge_token = strtok_r(input, " \n", &full_rest);
+    char *full_edge_token = strtok_r(input, " ", &full_rest);
 
     int counter = 0;
     int max_vertex_value = 0;
@@ -144,7 +144,7 @@ static int create_edges(char *input, int number_edges, long edge[number_edges][2
         edge[counter++][1] = second_value;
 
         // pass NULL to continue splitting string with strtok_r and get other edges
-        full_edge_token = strtok_r(NULL, " \n", &full_rest);
+        full_edge_token = strtok_r(NULL, " ", &full_rest);
     }
 
     return max_vertex_value;
@@ -285,7 +285,6 @@ static void shm_sem_setup(char *argv[])
  */
 int main(int argc, char *argv[])
 {
-
     // check if at least one edge is given
     if (argc <= 1)
     {
@@ -296,12 +295,12 @@ int main(int argc, char *argv[])
     // index to count through all given arguments
     int count = 1;
 
-    int length = 0;
+    size_t length = 0;
 
     // count number of chars in all given arguments
     while (count < argc)
     {
-        length += strlen(argv[count++]);
+            length += strlen(argv[count++]);
     }
 
     // add number of whitespaces which are needed between edges to length
@@ -321,7 +320,7 @@ int main(int argc, char *argv[])
         int i = 0;
 
         // loop through all chars of current argument
-        while (argv[count][i])
+        while (argv[count][i] != '\0')
         {
             // add current char of current argument to char array
             input[index++] = argv[count][i++];
@@ -344,10 +343,13 @@ int main(int argc, char *argv[])
     int number_edges;
     char *temp_input = strdup(input);
 
-    // free is not necessary/possible because string "deletes" itself
+    // save pointer to free char pointer later
+    char *temp_pointer = temp_input;
+
     for (number_edges = 0; temp_input[number_edges]; temp_input[number_edges] == '-' ? number_edges++ : *temp_input++)
     {
     }
+    free(temp_pointer);
 
     // initialize 2-d array
     long edge[number_edges][2];
@@ -379,7 +381,7 @@ int main(int argc, char *argv[])
     if (sigaction(SIGINT, &sa, NULL) + sigaction(SIGTERM, &sa, NULL) < 0)
     {
         fprintf(stderr, "%s Error while initializing signal handler: %s\n", argv[0], strerror(errno));
-        exit(EXIT_FAILURE); 
+        exit(EXIT_FAILURE);
     }
 
     // setup shm and semaphores

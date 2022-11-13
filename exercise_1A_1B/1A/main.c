@@ -52,7 +52,7 @@ static bool isPalindrom(char *input)
  */
 static void lowerLetters(char *input)
 {
-    while ((*input = tolower(*input)))
+    while ((*input = tolower(*input))!= '\0')
     {
         input++;
     }
@@ -68,7 +68,7 @@ static void removeWhitespaces(char *input)
     char *temp_input = input;
 
     // loop till null character is reached
-    while (*input)
+    while (*input != '\0')
     {
         // skip all whitespaces
         while (*temp_input == ' ')
@@ -112,6 +112,7 @@ static void readInputFile(FILE *input, bool caseInsensitive, bool ignoreWhitespa
     size_t size = 0;
 
     bool palindrom;
+
     // read line by line
     while (getline(&line, &size, input) != -1)
     {
