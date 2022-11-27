@@ -9,7 +9,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdbool.h>
+#include <assert.h>
 
 #include "common.h"
 
@@ -67,7 +67,7 @@ void parse_arguments(int argc, char *argv[], args_t *args) {
     }
     int input;
 
-    bool alreadySet = false;
+    int alreadySet = 0;
     while((input = getopt(argc, argv, "p:")) != -1) {
         switch(input){
             case 'p':
@@ -75,11 +75,13 @@ void parse_arguments(int argc, char *argv[], args_t *args) {
                     usage("");
                 }
                 args->password = optarg;
-                alreadySet = true;
+                alreadySet = 1;
                 break;
             case '?':
-            usage("");
-            break;
+                usage("");
+                break;
+            default:
+            assert(0);
         }
     }
 
