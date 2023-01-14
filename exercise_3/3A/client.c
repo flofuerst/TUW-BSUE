@@ -2,13 +2,13 @@
  * @file client.c
  * @author Florian Fürst (12122096)
  * @brief Client program which uses HTTP 1.1. The client can take an URL as input, connects to the corresponding server
- * and also requests the files specified in the URL. The transmitted data can be written to stdout or to file. 
- * It is also possible to specify a directory of a file, where the transmitted data should be written to. 
+ * and also requests the files specified in the URL. The transmitted data can be written to stdout or to file.
+ * It is also possible to specify a directory of a file, where the transmitted data should be written to.
  * @version 0.1
  * @date 2023-01-14
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 #include <stdio.h>
 #include <stdint.h>
@@ -26,13 +26,13 @@
 
 /**
  * @brief the program name which is used for usage and error messages
- * 
+ *
  */
 static char *argv_name;
 
 /**
  * @brief Prints the correct usage(synopsis) of the program to stderr
- * 
+ *
  */
 static void usage(void)
 {
@@ -43,9 +43,9 @@ static void usage(void)
 /**
  * @brief Checks if the given url is correct and splits the url into the host and request parts. Corrects
  * the request string/part if it is NULL or doesn't start with an '/'. Also checks if hostname is valid (non-empty).
- * 
+ *
  * @param url The whole url which is given through input
- * @param host The host of the url, which begins after the "http://" and ends before the first occurence of one of the 
+ * @param host The host of the url, which begins after the "http://" and ends before the first occurence of one of the
  * following characters ';/?:@=&'.
  * @param request The request part of the url. If it starts with an '?', a '/' gets added at the front.
  */
@@ -106,7 +106,7 @@ static void parse_url(char *url, char *host, char *request)
 
 /**
  * @brief Setup for the server connection. Returns the given file decriptor which is needed for further implementation.
- * 
+ *
  * @param host The host which is used by getaddrinfo
  * @param port The port which is used by getaddrinfo
  * @return int Returns the file descriptor of the socket
@@ -143,9 +143,9 @@ static int socket_setup(char *host, char *port)
 }
 
 /**
- * @brief Reads the header, parses its content and checks if header is valid. Prints error messages and 
+ * @brief Reads the header, parses its content and checks if header is valid. Prints error messages and
  * returns appropriate exit code
- * 
+ *
  * @param sockfile The file which is used to read the content
  * @return int Returns the appropriate exit code of the program. If everything is fine, then exit code 0 is returned
  */
@@ -195,7 +195,7 @@ static int validate_response_header(FILE *sockfile)
 
 /**
  * @brief Reads the body content of the reponse and writes this content to the output file
- * 
+ *
  * @param output The output file where the content gets written to. Can be stdout or a file
  * @param sockfile The file which is used to read the content
  */
@@ -213,7 +213,7 @@ static void read_body_content(FILE *output, FILE *sockfile)
 
 /**
  * @brief Reads the input and checks if the program is called correctly and handles the whole process of this exercise
- * 
+ *
  * @param argc number of arguments of the program call
  * @param argv array of the arguments of the program call
  * @return int return value of main method to tell when program is finished (and therefore can be removed from memory)
@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
             char *port_input = port_inputOriginal;
             while (*port_input != '\0')
             {
-                if (!isdigit(*port_input))
+                if (isdigit(*port_input) == 0)
                     usage();
                 port_input++;
             }
@@ -306,7 +306,7 @@ int main(int argc, char *argv[])
 
         // set filepath to dirname/filename if directory specified
 
-        char* filenameOriginal;
+        char *filenameOriginal;
         if (dir_set)
         {
             filenameOriginal = strdup(request + 1);
