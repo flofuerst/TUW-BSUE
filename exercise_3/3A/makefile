@@ -1,7 +1,7 @@
 # @file makefile
 # @author Florian Fuerst (12122096)
 # @brief The makefile for the exercise http_A which compiles and links files
-# @date 2023-01-11
+# @date 2023-01-14
  
 CC = gcc
 DEFS = -D_BSD_SOURCE -D_SVID_SOURCE -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L
